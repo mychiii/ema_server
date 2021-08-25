@@ -30,17 +30,29 @@ namespace EMa.API.Controllers
             return await _context.UserQuizzes.Where(p => p.IsActive == true && p.IsDeleted == false).ToListAsync();
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserQuiz>> Get(Guid id)
+        [HttpGet("getId")]
+        public async Task<ActionResult<UserQuiz>> Get()
         {
-            var quizType = await _context.UserQuizzes.FindAsync(id);
+            List<UserQuiz> userQuiz = new List<UserQuiz>();
+            string tokenString = Request.Headers["Authorization"].ToString();
+            // Get UserId, ChildName, PhoneNumber from token
+            var infoFromToken = Authorization.GetInfoFromToken(tokenString);
+            var userId = infoFromToken.Result.UserId;
 
-            if (quizType == null)
+            foreach (var item in _context.UserQuizzes)
+            {
+				if (item.UserId == Guid.Parse(userId))
+				{
+                    userQuiz.Add(item);
+				}
+            }
+
+            if (userQuiz == null)
             {
                 return NotFound();
             }
 
-            return Ok(quizType);
+            return Ok(userQuiz);
         }
 
         [HttpPost("")]
@@ -54,8 +66,8 @@ namespace EMa.API.Controllers
             UserQuiz createItem = new UserQuiz()
             {
                 QuizId = model.QuizId,
-                UserId = model.UserId,
-                SubmittedAt = model.SubmittedAt,
+                UserId = Guid.Parse(userId),
+                SubmittedAt = DateTime.Now,
                 Answer = model.Answer,
                 RightOrWrong = model.RightOrWrong,
                 NoExams = model.NoExams,

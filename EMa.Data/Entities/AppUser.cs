@@ -13,5 +13,6 @@ namespace EMa.Data.Entities
         public string IdentityCard { get; set; }
         public string Address { get; set; }
         public string UrlAvatar { get; set; }
+        public int Code { get; set; }
     }
 }

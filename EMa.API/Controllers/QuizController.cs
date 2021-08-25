@@ -29,12 +29,39 @@ namespace EMa.API.Controllers
         {
             return await _context.Quizzes.Where(p => p.IsActive == true && p.IsDeleted == false).ToListAsync();
         }
-
         [HttpGet("{id}")]
-        public async Task<ActionResult<Quiz>> Get(Guid id)
+        public async Task<ActionResult<Quiz>> GetId(Guid id)
         {
-            var quizType = await _context.Quizzes.FindAsync(id);
+			var quizType = await _context.Quizzes.FindAsync(id);
 
+
+			if (quizType == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(quizType);
+        }
+        [HttpGet("{id}/{idv}")]
+        public async Task<ActionResult<Quiz>> Get(Guid id,Guid idv)
+        {
+            //var quizType = await _context.Quizzes.FindAsync(id);
+            List<Quiz> quizType = new List<Quiz>();
+            Guid lesson = id;
+            string type = idv.ToString();
+            List<LessionQuiz> lessionQuiz = new List<LessionQuiz>();
+			foreach (var item in _context.LessionQuizzes)
+			{
+				if (item.QuestionType == type && item.LesionId == lesson)
+				{
+                    lessionQuiz.Add(item);
+				}
+            }
+            foreach (var item in lessionQuiz)
+			{
+                quizType.Add(await _context.Quizzes.FindAsync(item.QuizId));
+			}
+            
             if (quizType == null)
             {
                 return NotFound();
