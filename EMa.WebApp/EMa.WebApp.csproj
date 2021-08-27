@@ -9,7 +9,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EMa.Common\EMa.Common.csproj" />
     <ProjectReference Include="..\EMa.Data\EMa.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\img\" />
+    <Folder Include="wwwroot\uploads\blogs\" />
   </ItemGroup>
 
 </Project>
