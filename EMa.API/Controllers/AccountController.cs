@@ -1,4 +1,5 @@
-﻿using EMa.Data.DataContext;
+﻿using EMa.API.Entity;
+using EMa.Data.DataContext;
 using EMa.Data.Entities;
 using EMa.Data.ViewModel;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +14,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace EMa.API.Controllers
 {
@@ -24,6 +27,9 @@ namespace EMa.API.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly DataDbContext _context;
+
+        private string accountSid = "AC1b8cf251bf9d24497abf3fe3d32bf237";
+        private string authToken = "2c79ab8b2a0e332633fb068cef182210";
 
         public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
             IConfiguration configuration, DataDbContext context)
@@ -42,26 +48,60 @@ namespace EMa.API.Controllers
         {
             if(ModelState.IsValid)
             {
-                var phoneNumberExists = this.PhoneNumbersExists(model.PhoneNumber);
+                var existingUser = await _userManager.FindByNameAsync(model.PhoneNumber);
 
-                if (!phoneNumberExists)
+                if (existingUser == null)
                 {
-                    return BadRequest();
-                }
-                else
-                {
-                    var appUser = _userManager.Users.SingleOrDefault(r => r.PhoneNumber == model.PhoneNumber);
-
-                    var result = await _signInManager.PasswordSignInAsync(appUser, model.Password, false, false);
-
-                    if (result.Succeeded)
+                    return BadRequest(new AuthResult()
                     {
-                        var token = await GenerateJwtToken(appUser.PhoneNumber, appUser);
-                        return Ok(token);
-                    }
-
-                    return Unauthorized();
+                        Errors = new List<string>() {
+                                "Invalid login request"
+                            },
+                        Success = false
+                    });
                 }
+
+                var isCorrect = await _userManager.CheckPasswordAsync(existingUser, model.Password);
+                if (!isCorrect)
+                {
+                    return BadRequest(new AuthResult()
+                    {
+                        Errors = new List<string>() {
+                                "Invalid login request"
+                            },
+                        Success = false
+                    });
+                }
+                var _check = existingUser.PhoneNumberConfirmed;
+
+                if (_check == false)
+                {
+                    String _phoneNumber = existingUser.PhoneNumber.Substring(1);
+                    _phoneNumber = "+84" + _phoneNumber;
+                    TwilioClient.Init(accountSid, authToken);
+
+                    var message = MessageResource.Create(
+                        body: "Mã xác nhận của bạn là " + existingUser.Code.ToString(),
+                        from: new Twilio.Types.PhoneNumber("+17348905251"),
+                        to: new Twilio.Types.PhoneNumber(_phoneNumber)
+                    );
+                    Content(message.Sid);
+                    return Ok(new AuthResult()
+                    {
+                        Errors = new List<string>() {
+                                "Mã xác nhận của bạn là " + existingUser.Code.ToString(),
+                            },
+                        Success = false
+                    });
+                }
+                var jwtToken = GenerateJwtToken(existingUser.PhoneNumber, existingUser);
+                return Ok(new AuthResult()
+                {
+                    Success = true,
+                    Token = jwtToken.Result
+                });
+
+                
             }
 
             return BadRequest();
@@ -74,35 +114,155 @@ namespace EMa.API.Controllers
         {
             if(ModelState.IsValid)
             {
-                var phoneNumberExists = this.PhoneNumbersExists(model.PhoneNumber);
-
-                if (phoneNumberExists)
+                if (model.PhoneNumber.Length != 10 && model.PhoneNumber.Substring(0, 1) == "0")
                 {
-                    return BadRequest();
+                    return BadRequest(new AuthResult()
+                    {
+                        Errors = new List<string>() {
+                                "PhoneNumber must be of length 10 and must start from 0"
+                            },
+                        Success = false
+                    });
                 }
-                else
+                var phoneNumberExists = await _userManager.FindByNameAsync(model.PhoneNumber);
+
+                if (phoneNumberExists != null)
                 {
+                    if (phoneNumberExists.PhoneNumberConfirmed == false)
+                    {
+                        String _phoneNumber = model.PhoneNumber.Substring(1);
+                        _phoneNumber = "+84" + _phoneNumber;
+                        TwilioClient.Init(accountSid, authToken);
+
+                        var message = MessageResource.Create(
+                            body: "Mã xác nhận của bạn là " + phoneNumberExists.Code.ToString(),
+                            from: new Twilio.Types.PhoneNumber("+17348905251"),
+                            to: new Twilio.Types.PhoneNumber(_phoneNumber)
+                        );
+                        Content(message.Sid);
+                        return Ok(new AuthResult()
+                        {
+                            Errors = new List<string>() {
+                                "Mã xác nhận của bạn là " + phoneNumberExists.Code.ToString(),
+                            },
+                            Success = true
+                        });
+                    } else
+					{
+                        return Ok(new AuthResult()
+                        {
+                            Errors = new List<string>() {
+                                "PhoneNumber already in use"
+                            },
+                            Success = false
+                        });
+                    }
+                    
+                }
+                
                     var user = new AppUser
                     {
                         ChildName = model.ChildName,
                         UserName = model.PhoneNumber,
                         PhoneNumber = model.PhoneNumber
                     };
-                    var result = await _userManager.CreateAsync(user, model.Password);
+                    var newId = Guid.NewGuid();
+                    Random _code = new Random();
+                    var newUser = new AppUser() { Id = newId,ChildName = user.ChildName, UserName = user.UserName, PhoneNumber = user.PhoneNumber, Code = _code.Next(100000, 999999) };
+                    var result = await _userManager.CreateAsync(newUser, model.Password);
 
                     if (result.Succeeded)
                     {
-                        return await GenerateJwtToken(model.PhoneNumber, user);
-                    }
+                    var _existingPhoneNumber = await _userManager.FindByIdAsync(newId.ToString());
+                    String _phoneNumber = _existingPhoneNumber.PhoneNumber.Substring(1);
+                    _phoneNumber = "+84" + _phoneNumber;
+                    TwilioClient.Init(accountSid, authToken);
 
-                    return BadRequest();
+                    var message = MessageResource.Create(
+                        body: "Mã xác nhận của bạn là " + _existingPhoneNumber.Code.ToString(),
+                        from: new Twilio.Types.PhoneNumber("+17348905251"),
+                        to: new Twilio.Types.PhoneNumber(_phoneNumber)
+                    );
+                    Content(message.Sid);
+                    return Ok(new AuthResult()
+                    {
+                        Errors = new List<string>() {
+                                "Mã xác nhận của bạn là " + _existingPhoneNumber.Code.ToString(),
+                            },
+                        Success = true
+                    });
                 }
+                else
+                {
+                    return BadRequest(new AuthResult()
+                    {
+                        Errors = result.Errors.Select(x => x.Description).ToList(),
+                        Success = false
+                    });
+                }
+
+                
             }
 
             return BadRequest();
         }
 
-        private async Task<object> GenerateJwtToken(string phoneNumber, AppUser user)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("Confirm")]
+        public async Task<IActionResult> Confirm([FromBody] UserConfirm user)
+        {
+            if (ModelState.IsValid)
+            {
+                var existingPhoneNumber = await _userManager.FindByNameAsync(user.PhoneNumber);
+                if (existingPhoneNumber == null)
+                {
+                    return Ok(new AuthResult()
+                    {
+                        Errors = new List<string>() {
+                                "PhoneNumber not already in use"
+                            },
+                        Success = false
+                    });
+                }
+                if (existingPhoneNumber.Code != user.Code)
+                {
+                    return Ok(new AuthResult()
+                    {
+                        Errors = new List<string>() {
+                                "Mã xác nhận không đúng"
+                            },
+                        Success = false
+                    });
+                }
+                else
+                {
+
+
+
+                    existingPhoneNumber.PhoneNumberConfirmed = true;
+                    await _userManager.UpdateAsync(existingPhoneNumber);
+                    var jwtToken = GenerateJwtToken(existingPhoneNumber.PhoneNumber,existingPhoneNumber);
+
+                    return Ok(new AuthResult()
+                    {
+                        Success = true,
+                        Token = jwtToken.Result
+                    });
+                }
+
+            }
+
+            return BadRequest(new AuthResult()
+            {
+                Errors = new List<string>() {
+                        "Invalid payload"
+                    },
+                Success = false
+            });
+        }
+
+        private Task<string> GenerateJwtToken(string phoneNumber, AppUser user)
         {
             var claims = new List<Claim>
             {
@@ -114,7 +274,7 @@ namespace EMa.API.Controllers
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
+            var expires = DateTime.Now.AddYears(Convert.ToInt32(_configuration["JwtExpireDays"]));
 
             var token = new JwtSecurityToken(
                 _configuration["JwtIssuer"],
@@ -124,12 +284,9 @@ namespace EMa.API.Controllers
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
-        private bool PhoneNumbersExists(string phoneNumber)
-        {
-            return _context.AppUsers.Any(e => e.PhoneNumber == phoneNumber);
-        }
+        
     }
 }

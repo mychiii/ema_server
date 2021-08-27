@@ -32,12 +32,13 @@ namespace EMa.Data.Extensions
                 NormalizedEmail = "EMA@GMAIL.COM",
                 ChildName = "Ema Baby",
                 EmailConfirmed = true,
-                PhoneNumber = "0112233445",
+                PhoneNumber = "0968354148",
                 PasswordHash = hasher.HashPassword(null, "Abc123!@#"),
                 SecurityStamp = string.Empty,
                 ParentName = "Administrator",
                 UrlAvatar = "/upload/avatar/admin1.jpg",
-                Address = "Đà Nẵng"
+                Address = "Đà Nẵng",
+                Code = 050620
             });
 
             modelBuilder.Entity<IdentityUserRole<Guid>>().HasData(new IdentityUserRole<Guid>
