@@ -10,15 +10,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EMa.Data.Migrations
 {
     [DbContext(typeof(DataDbContext))]
-    [Migration("20210820153121_Migrations")]
-    partial class Migrations
+    [Migration("20210827070745_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.8")
+                .HasAnnotation("ProductVersion", "5.0.9")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("EMa.Data.Entities.AppRole", b =>
@@ -56,7 +56,7 @@ namespace EMa.Data.Migrations
                         new
                         {
                             Id = new Guid("8d04dce2-969a-435d-bba4-df3f325983dc"),
-                            ConcurrencyStamp = "352c618d-268d-4585-a619-b5d48248f9ad",
+                            ConcurrencyStamp = "87246adf-920e-437e-8db5-a985d76f8596",
                             Description = "Administrator role",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
@@ -166,21 +166,21 @@ namespace EMa.Data.Migrations
                             ChildGender = false,
                             ChildName = "Ema Baby",
                             Code = 50620,
-                            ConcurrencyStamp = "154fc585-ac3b-4abb-b690-8acb39565674",
+                            ConcurrencyStamp = "b18a86d9-e721-4115-9a58-f226f004105c",
                             Email = "ema@gmail.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "EMA@GMAIL.COM",
-                            NormalizedUserName = "0112233445",
+                            NormalizedUserName = "0968354148",
                             ParentAge = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             ParentName = "Administrator",
-                            PasswordHash = "AQAAAAEAACcQAAAAEGJlgX2Oee3xP9YFp/cZvMUilAH1dK5xiWv6i8qJd6Fz8ClJdHG/BaHkTqDA8txSgg==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEA4h0qBFdhE0taktwonNFB8qrYNjtX7Yp1wV8ScfTlv32xB4GFoN3N5RyWz9kRl5Xg==",
                             PhoneNumber = "0968354148",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,
                             UrlAvatar = "/upload/avatar/admin1.jpg",
-                            UserName = "0112233445"
+                            UserName = "0968354148"
                         });
                 });
 
@@ -421,6 +421,9 @@ namespace EMa.Data.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("QuizTypeId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 

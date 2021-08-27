@@ -23,6 +23,22 @@ namespace EMa.API.Controllers
             _context = context;
         }
 
+        // Get list lesson by quizType
+        [HttpGet("GetLessonByType/{quizTypeId}")]
+        public async Task<ActionResult<Lession>> GetLessonByType(Guid quizTypeId)
+        {
+            var quizType = await (from qt in _context.QuizTypes
+                           join ls in _context.Lessions on qt.Id equals ls.QuizTypeId
+                           select ls).ToListAsync();
+
+            if (quizType == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(quizType);
+        }
+
         [HttpGet]
         [Route("")]
         public async Task<ActionResult<IEnumerable<Lession>>> GetAll()
@@ -54,6 +70,7 @@ namespace EMa.API.Controllers
             Lession createItem = new Lession()
             {
                 Name = model.Name,
+                QuizTypeId = model.QuizTypeId,
                 CreatedDate = DateTime.Now,
                 CreatedTime = DateTime.Now,
                 CreatedBy = userId,
@@ -83,6 +100,7 @@ namespace EMa.API.Controllers
             {
                 Id = id,
                 Name = model.Name,
+                QuizTypeId = model.QuizTypeId,
                 CreatedDate = DateTime.Now,
                 CreatedTime = DateTime.Now,
                 CreatedBy = userId,

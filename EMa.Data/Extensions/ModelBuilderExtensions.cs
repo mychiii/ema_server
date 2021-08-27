@@ -26,8 +26,8 @@ namespace EMa.Data.Extensions
             modelBuilder.Entity<AppUser>().HasData(new AppUser
             {
                 Id = adminId,
-                UserName = "0112233445",
-                NormalizedUserName = "0112233445",
+                UserName = "0968354148",
+                NormalizedUserName = "0968354148",
                 Email = "ema@gmail.com",
                 NormalizedEmail = "EMA@GMAIL.COM",
                 ChildName = "Ema Baby",
