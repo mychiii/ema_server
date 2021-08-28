@@ -35,7 +35,7 @@ namespace EMa.WebApp.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var post = _context.Blogs.Where(p => p.IsDeleted == false && p.CreatedBy == userId)
-                .OrderBy(p => p.CreatedBy)
+                .OrderBy(p => p.ModifiedDate)
                 .ToList();
 
             return View(post);

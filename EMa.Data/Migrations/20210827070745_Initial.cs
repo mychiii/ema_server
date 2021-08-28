@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace EMa.Data.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -35,6 +35,7 @@ namespace EMa.Data.Migrations
                     IdentityCard = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UrlAvatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Code = table.Column<int>(type: "int", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -82,6 +83,7 @@ namespace EMa.Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    QuizTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -649,12 +651,12 @@ namespace EMa.Data.Migrations
             migrationBuilder.InsertData(
                 table: "AppRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Description", "Name", "NormalizedName" },
-                values: new object[] { new Guid("8d04dce2-969a-435d-bba4-df3f325983dc"), "29370070-7e82-436c-80b4-4b6997f687fa", "Administrator role", "Admin", "ADMIN" });
+                values: new object[] { new Guid("8d04dce2-969a-435d-bba4-df3f325983dc"), "87246adf-920e-437e-8db5-a985d76f8596", "Administrator role", "Admin", "ADMIN" });
 
             migrationBuilder.InsertData(
                 table: "AppUsers",
-                columns: new[] { "Id", "AccessFailedCount", "Address", "ChildBirth", "ChildGender", "ChildName", "ConcurrencyStamp", "Email", "EmailConfirmed", "IdentityCard", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "ParentAge", "ParentName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UrlAvatar", "UserName" },
-                values: new object[] { new Guid("69bd714f-9576-45ba-b5b7-f00649be00de"), 0, "Đà Nẵng", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Ema Baby", "ddc18d80-94df-4d19-ba21-6df3d183e01e", "ema@gmail.com", true, null, false, null, "EMA@GMAIL.COM", "0112233445", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Administrator", "AQAAAAEAACcQAAAAEBs35W4W5Z6xKMPaff4V+Bpu9ye1bsiRzxNPI5sMO+7AVQp/twfJgnawr5stYszYBg==", "0112233445", false, "", false, "/upload/avatar/admin1.jpg", "0112233445" });
+                columns: new[] { "Id", "AccessFailedCount", "Address", "ChildBirth", "ChildGender", "ChildName", "Code", "ConcurrencyStamp", "Email", "EmailConfirmed", "IdentityCard", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "ParentAge", "ParentName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UrlAvatar", "UserName" },
+                values: new object[] { new Guid("69bd714f-9576-45ba-b5b7-f00649be00de"), 0, "Đà Nẵng", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Ema Baby", 50620, "b18a86d9-e721-4115-9a58-f226f004105c", "ema@gmail.com", true, null, false, null, "EMA@GMAIL.COM", "0968354148", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Administrator", "AQAAAAEAACcQAAAAEA4h0qBFdhE0taktwonNFB8qrYNjtX7Yp1wV8ScfTlv32xB4GFoN3N5RyWz9kRl5Xg==", "0968354148", false, "", false, "/upload/avatar/admin1.jpg", "0968354148" });
 
             migrationBuilder.InsertData(
                 table: "AppUserRoles",
